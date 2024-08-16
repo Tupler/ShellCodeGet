@@ -108,22 +108,28 @@ void scbegin(){
     
     ULONG hash_name = 0;
     ULONG64 DllBase =0;
+    DWORD dwModuleHash = 0;
     //通过HASH查找 KERNEL32的baseAddr x64使用ULONG64
     while (XfBlink != xf)
     {
-        size_t m_counter = ldrEntry->BaseDllName.Length / 2;
-        //printf("len :%d\n",m_counter);
-        do {
-            hash_name = _rotr((unsigned long)hash_name, 13);
-            if (*b >= 'a')
-                hash_name += *b - 0x20;
+        dwModuleHash = 0;
+        PCSTR pTempChar;
+        for (int i = 0; i < ldrEntry->BaseDllName.MaximumLength; i++)
+        {
+            pTempChar = ((PCSTR)ldrEntry->BaseDllName.Buffer + i);
+
+            dwModuleHash = _rotr(dwModuleHash, 13);
+
+            if (*pTempChar >= 0x61)
+            {
+                dwModuleHash += *pTempChar - 0x20;
+            }
             else
-                hash_name += *b;
-            //PWSTR 一次+2
-            b++;
-            
-        } while (--m_counter);
-        if(hash_name==0x563c38a4){
+            {
+                dwModuleHash += *pTempChar;
+            }
+        }
+        if(dwModuleHash==0x92AF16DA){
             DllBase = (ULONG64)ldrEntry->DllBase;
             break;
         }
