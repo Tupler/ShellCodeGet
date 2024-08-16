@@ -152,24 +152,28 @@ void shellcodeBegin() {
 
 
     ldr_table = (DWORD)((PPEB_LDR_DATA)base_address)->InLoadOrderModuleList.Flink;//InMemoryOrderModuleList.Flink;
-   // printf("%p\n", ldr_table);
     //1. 通过peb里面的LDR找到kernel32的地址
     while (ldr_table) {
-        dll_name = (DWORD)((PLDR_DATA_TABLE_ENTRY)ldr_table)->BaseDllName.pBuffer;
-        // printf("%x\n", dll_name);
+        //dll_name = (DWORD)((PLDR_DATA_TABLE_ENTRY)ldr_table)->BaseDllName.pBuffer;
 
-        m_counter = ((PLDR_DATA_TABLE_ENTRY)ldr_table)->BaseDllName.Length;
-        //hashname查找
-        hash_name = 0;
-        do {
-            hash_name = _rotr((unsigned long)hash_name, 13);
-            if (*((unsigned char*)dll_name) >= 'a')
-                hash_name += *((unsigned char*)dll_name) - 0x20;
-            else
-                hash_name += *((unsigned char*)dll_name);
-            dll_name++;
-        } while (--m_counter);
-        if ((unsigned long)hash_name == 0x6A4ABC5B) {
+        dwModuleHash = 0;
+        PCSTR pTempChar;
+      for (int i = 0; i < ((PLDR_DATA_TABLE_ENTRY)ldr_table)->BaseDllName.MaximumLength; i++)
+      {
+          pTempChar = ((PCSTR)ldrEntry->BaseDllName.Buffer + i);
+
+          dwModuleHash = _rotr(dwModuleHash, 13);
+
+          if (*pTempChar >= 0x61)
+          {
+              dwModuleHash += *pTempChar - 0x20;
+          }
+          else
+          {
+              dwModuleHash += *pTempChar;
+          }
+      }
+        if ((unsigned long)dwModuleHash == 0x92AF16DA) {
             //这就是kernel.dll的地址了
             kernel32_base = (DWORD)((PLDR_DATA_TABLE_ENTRY)ldr_table)->DllBase;
             break;
