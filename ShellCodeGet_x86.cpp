@@ -153,6 +153,7 @@ void shellcodeBegin() {
 
     ldr_table = (DWORD)((PPEB_LDR_DATA)base_address)->InLoadOrderModuleList.Flink;//InMemoryOrderModuleList.Flink;
     //1. 通过peb里面的LDR找到kernel32的地址
+    DWROD dwModuleHash =0;
     while (ldr_table) {
         //dll_name = (DWORD)((PLDR_DATA_TABLE_ENTRY)ldr_table)->BaseDllName.pBuffer;
 
